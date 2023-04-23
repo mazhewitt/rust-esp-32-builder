@@ -26,7 +26,8 @@ RUN apt-get update && \
         python3-venv \
         unzip \
         wget \
-        xz-utils && \
+        xz-utils  \
+        libclang-dev && \
     rm -rf /var/lib/apt/lists/*
 
 # Install Rust and set default to stable
