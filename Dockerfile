@@ -24,6 +24,8 @@ RUN apt-get update && \
         pkg-config \
         python3 \
         python3-venv \
+        python3-pip \
+        python-dev \
         unzip \
         wget \
         xz-utils  \
@@ -44,15 +46,22 @@ RUN git clone https://github.com/esp-rs/rust-build.git /opt/esp/rust-build && \
 
 # Clone ESP-IDF repository and install the toolchain
 ENV IDF_PATH="/opt/esp/idf"
-RUN git clone --recursive https://github.com/espressif/esp-idf.git $IDF_PATH && \
+RUN git clone -b v4.4.4 --recursive https://github.com/espressif/esp-idf.git  $IDF_PATH && \
     cd $IDF_PATH && \
     git submodule update --init --recursive && \
     ./install.sh esp32 && \
     echo "source /opt/esp/idf/export.sh" >> ~/.bashrc
 
+
+RUN cargo install cargo-generate &&\
+    cargo install ldproxy &&\
+    cargo install espup
+
+
+COPY config.toml /root/.cargo/config.toml
+
 # Configure the environment and set the working directory
 WORKDIR /project
 ENV PATH="${PATH}:/root/.espressif/tools/xtensa-esp32-elf/esp-12.2.0_20230208/xtensa-esp32-elf/bin:/opt/esp/idf/tools:/opt/esp/idf/components/esptool_py/esptool"
-ENV CARGO_TARGET_XTENSA_ESP32_NONE_ELF_LINKER="xtensa-esp32-elf-gcc"
 
 CMD ["/bin/bash"]
