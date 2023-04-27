@@ -1,36 +1,6 @@
-FROM debian:bullseye-slim
+FROM espressif/idf
 
-# Update and install dependencies
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        bison \
-        ccache \
-        cmake \
-        curl \
-        dfu-util \
-        flex \
-        g++ \
-        gcc \
-        git \
-        gperf \
-        libc6-dev \
-        libffi-dev \
-        libpython2.7 \
-        libssl-dev \
-        libudev-dev \
-        libusb-1.0-0 \
-        make \
-        ninja-build \
-        pkg-config \
-        python3 \
-        python3-venv \
-        python3-pip \
-        python-dev \
-        unzip \
-        wget \
-        xz-utils  \
-        libclang-dev && \
-    rm -rf /var/lib/apt/lists/*
+
 
 # Install Rust and set default to stable
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y && \
@@ -38,25 +8,26 @@ RUN curl https://sh.rustup.rs -sSf | sh -s -- -y && \
 ENV PATH="/root/.cargo/bin:${PATH}"
 
 # Clone rust-build repository and install Rust toolchain
-RUN git clone https://github.com/esp-rs/rust-build.git /opt/esp/rust-build && \
-    cd /opt/esp/rust-build && \
-    ./install-rust-toolchain.sh && \
-    . ./export-esp.sh && \
-    echo ". /opt/esp/rust-build/export-esp.sh" >> ~/.bashrc
+RUN mkdir -p /opt/esp/rust-build
+RUN cd /opt/esp/rust-build
+RUN git clone https://github.com/esp-rs/rust-build.git /opt/esp/rust-build 
+RUN /opt/esp/rust-build/install-rust-toolchain.sh 
+RUN     echo ". /opt/esp/rust-build/export-esp.sh" >> ~/.bashrc
+RUN echo "LIBCLANG_PATH=/opt/esp/tools/xtensa-esp32-elf-clang/esp-15.0.0-20221201-aarch64-unknown-linux-gnu/esp-clang/lib" >> ~/.bashrc
+RUN echo "unset IDF_PATH" >> ~/.bashrc
 
 # Clone ESP-IDF repository and install the toolchain
-ENV IDF_PATH="/opt/esp/idf"
-RUN git clone -b v4.4.4 --recursive https://github.com/espressif/esp-idf.git  $IDF_PATH && \
-    cd $IDF_PATH && \
-    git submodule update --init --recursive && \
-    ./install.sh esp32 && \
-    echo "source /opt/esp/idf/export.sh" >> ~/.bashrc
+#ENV IDF_PATH="/opt/esp/idf"
+#RUN git clone -b v4.4.4 --recursive https://github.com/espressif/esp-idf.git  $IDF_PATH && \
+#    cd $IDF_PATH && \
+#    git submodule update --init --recursive && \
+#    ./install.sh esp32 && \
+#    echo "source /opt/esp/idf/export.sh" >> ~/.bashrc
 
 
-RUN cargo install cargo-generate &&\
-    cargo install ldproxy &&\
-    cargo install espup
+RUN cargo install ldproxy 
 
+RUN ln -s -T /usr/bin/make /usr/bin/gmake
 
 COPY config.toml /root/.cargo/config.toml
 
