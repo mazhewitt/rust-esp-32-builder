@@ -36,7 +36,7 @@ RUN curl https://sh.rustup.rs -sSf | sh -s -- -y && \
     /root/.cargo/bin/rustup default stable
 ENV PATH="/root/.cargo/bin:${PATH}"
 
-# Clone rust-build repository and install Rust toolchain
+# Download espup and install Rust toolchain
 RUN curl -L https://github.com/esp-rs/espup/releases/latest/download/espup-aarch64-unknown-linux-gnu -o espup \
     && chmod a+x espup \
     && ./espup install \
